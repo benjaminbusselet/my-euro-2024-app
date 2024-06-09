@@ -1,0 +1,17 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /projects/euro2024predicator/
+
+  # Rediriger les requêtes vers index.html sauf si le fichier ou le dossier existe
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /projects/euro2024predicator/index.html [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+  # Mettre en cache les fichiers statiques
+  <FilesMatch "\.(js|css|html|png|jpg|gif|svg|woff|woff2)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
