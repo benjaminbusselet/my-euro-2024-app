@@ -1,8 +1,10 @@
-# React + Vite
+# Euro 2024 Predictor
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Euro 2024 Predictor est une application web permettant de prédire les résultats des matchs de l'Euro 2024, depuis la phase de groupes jusqu'à la finale.
 
-Currently, two official plugins are available:
+## Fonctionnalités
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Prédiction des résultats des matchs de la phase de groupes.
+- Calcul des équipes qualifiées pour la phase finale.
+- Simulation des résultats des matchs de la phase finale (huitièmes de finale, quarts de finale, demi-finales et finale).
+- Interface responsive adaptée aux écrans d'ordinateurs et de smartphones.
