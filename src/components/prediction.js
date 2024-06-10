@@ -8,23 +8,23 @@ const calculateCoefficient = (results, fifaIndex) => {
     return recentFormPoints * adjustedFifaIndex;
 };
 
-const randomNormalPerturbation = (mean = 0, stdDev = 0.05) => {
+function randomNormalPerturbation(mean = 0, stdDev = 0.02) { // Réduction de l'écart-type à 0.02
     let u1 = 0, u2 = 0;
     while (u1 === 0) u1 = Math.random();
     while (u2 === 0) u2 = Math.random();
     const z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
     return z0 * stdDev + mean;
-};
+}
 
-const simulateMatch = (teamACoefficient, teamBCoefficient, simulations = 1000) => {
+function simulateMatch(teamACoefficient, teamBCoefficient, simulations = 5000) { // Augmenter à 5000 simulations
     let teamAWins = 0;
     let teamBWins = 0;
     let draws = 0;
-    const tolerance = 1.0;
+    const tolerance = 1.0; // Tolérance pour les matchs nuls
 
     for (let i = 0; i < simulations; i++) {
-        const perturbedTeamACoefficient = teamACoefficient + randomNormalPerturbation();
-        const perturbedTeamBCoefficient = teamBCoefficient + randomNormalPerturbation();
+        const perturbedTeamACoefficient = teamACoefficient + randomNormalPerturbation(0, 0.02); // Utiliser la nouvelle perturbation
+        const perturbedTeamBCoefficient = teamBCoefficient + randomNormalPerturbation(0, 0.02);
 
         if (Math.abs(perturbedTeamACoefficient - perturbedTeamBCoefficient) < tolerance) {
             draws++;
@@ -36,7 +36,7 @@ const simulateMatch = (teamACoefficient, teamBCoefficient, simulations = 1000) =
     }
 
     return { teamAWins, teamBWins, draws };
-};
+}
 
 const predictMatchResult = (teamACoefficient, teamBCoefficient) => {
     const { teamAWins, teamBWins, draws } = simulateMatch(teamACoefficient, teamBCoefficient);
