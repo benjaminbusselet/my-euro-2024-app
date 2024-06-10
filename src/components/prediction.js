@@ -2,33 +2,29 @@ const calculatePoints = (results) => {
     return results.reduce((acc, result) => acc + result, 0);
 };
 
-const randomNormalPerturbation = (mean = 0, stdDev = 0.02) => { // Réduire l'écart-type à 0.02
+const calculateCoefficient = (results, fifaIndex) => {
+    const recentFormPoints = calculatePoints(results);
+    const adjustedFifaIndex = (200 - fifaIndex) / 200; // Normalisation de l'indice FIFA
+    return recentFormPoints * adjustedFifaIndex;
+};
+
+function randomNormalPerturbation(mean = 0, stdDev = 0.02) {
     let u1 = 0, u2 = 0;
     while (u1 === 0) u1 = Math.random();
     while (u2 === 0) u2 = Math.random();
     const z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
     return z0 * stdDev + mean;
-};
+}
 
-const calculateWeightedCoefficient = (teamStats, recentPerformanceWeight = 0.6, fifaIndexWeight = 0.4) => {
-    const recentPerformance = calculatePoints(teamStats.results);
-    const adjustedFifaIndex = (200 - teamStats.fifaIndex) / 200;
-
-    return (recentPerformance * recentPerformanceWeight) + (adjustedFifaIndex * fifaIndexWeight);
-};
-
-const simulateMatch = (teamAStats, teamBStats, simulations = 5000) => { // Augmenter à 5000 simulations
+function simulateMatch(teamACoefficient, teamBCoefficient, simulations = 5000) { // Augmenter à 5000 simulations
     let teamAWins = 0;
     let teamBWins = 0;
     let draws = 0;
-    const tolerance = 1.0;
-
-    const teamACoefficient = calculateWeightedCoefficient(teamAStats);
-    const teamBCoefficient = calculateWeightedCoefficient(teamBStats);
+    const tolerance = 1.0; // Tolérance pour les matchs nuls
 
     for (let i = 0; i < simulations; i++) {
-        const perturbedTeamACoefficient = teamACoefficient + randomNormalPerturbation();
-        const perturbedTeamBCoefficient = teamBCoefficient + randomNormalPerturbation();
+        const perturbedTeamACoefficient = teamACoefficient + randomNormalPerturbation(0, 0.02); // Utiliser la nouvelle perturbation
+        const perturbedTeamBCoefficient = teamBCoefficient + randomNormalPerturbation(0, 0.02);
 
         if (Math.abs(perturbedTeamACoefficient - perturbedTeamBCoefficient) < tolerance) {
             draws++;
@@ -40,6 +36,18 @@ const simulateMatch = (teamAStats, teamBStats, simulations = 5000) => { // Augme
     }
 
     return { teamAWins, teamBWins, draws };
+}
+
+const predictMatchResult = (teamACoefficient, teamBCoefficient) => {
+    const { teamAWins, teamBWins, draws } = simulateMatch(teamACoefficient, teamBCoefficient);
+
+    if (teamAWins > teamBWins && teamAWins > draws) {
+        return 'A';
+    } else if (teamBWins > teamAWins && teamBWins > draws) {
+        return 'B';
+    } else {
+        return 'Draw';
+    }
 };
 
 const groupTeams = {
@@ -90,6 +98,72 @@ const groupsData = {
     }
 };
 
+const groupMatches = [
+    { date: '14 juin', match: 'Allemagne – Ecosse', teamA: 1, teamB: 2 },
+    { date: '15 juin', match: 'Espagne – Croatie', teamA: 5, teamB: 6 },
+    { date: '15 juin', match: 'Italie – Albanie', teamA: 7, teamB: 8 },
+    { date: '15 juin', match: 'Hongrie – Suisse', teamA: 3, teamB: 4 },
+    { date: '16 juin', match: 'Serbie – Angleterre', teamA: 11, teamB: 12 },
+    { date: '16 juin', match: 'Pologne – Pays-Bas', teamA: 13, teamB: 14 },
+    { date: '16 juin', match: 'Slovénie – Danemark', teamA: 9, teamB: 10 },
+    { date: '17 juin', match: 'Autriche – France', teamA: 15, teamB: 16 },
+    { date: '17 juin', match: 'Belgique – Slovaquie', teamA: 17, teamB: 18 },
+    { date: '17 juin', match: 'Roumanie – Ukraine', teamA: 19, teamB: 20 },
+    { date: '18 juin', match: 'Portugal – Rép.Tchèque', teamA: 23, teamB: 24 },
+    { date: '18 juin', match: 'Turquie – Géorgie', teamA: 21, teamB: 22 },
+    { date: '19 juin', match: 'Croatie – Albanie', teamA: 6, teamB: 8 },
+    { date: '19 juin', match: 'Ecosse – Suisse', teamA: 2, teamB: 4 },
+    { date: '19 juin', match: 'Allemagne – Hongrie', teamA: 1, teamB: 3 },
+    { date: '20 juin', match: 'Espagne – Italie', teamA: 5, teamB: 7 },
+    { date: '20 juin', match: 'Danemark – Angleterre', teamA: 10, teamB: 12 },
+    { date: '20 juin', match: 'Slovénie – Serbie', teamA: 9, teamB: 11 },
+    { date: '21 juin', match: 'Pologne – Autriche', teamA: 13, teamB: 15 },
+    { date: '21 juin', match: 'Pays-Bas – France', teamA: 14, teamB: 16 },
+    { date: '21 juin', match: 'Slovaquie – Ukraine', teamA: 18, teamB: 20 },
+    { date: '22 juin', match: 'Géorgie – Rép.Tchèque', teamA: 22, teamB: 24 },
+    { date: '22 juin', match: 'Turquie – Portugal', teamA: 21, teamB: 23 },
+    { date: '22 juin', match: 'Belgique – Roumanie', teamA: 17, teamB: 19 },
+    { date: '23 juin', match: 'Suisse – Allemagne', teamA: 4, teamB: 1 },
+    { date: '23 juin', match: 'Ecosse – Hongrie', teamA: 2, teamB: 3 },
+    { date: '24 juin', match: 'Croatie – Italie', teamA: 6, teamB: 7 },
+    { date: '24 juin', match: 'Albanie – Espagne', teamA: 8, teamB: 5 },
+    { date: '25 juin', match: 'Pays-Bas – Autriche', teamA: 14, teamB: 15 },
+    { date: '25 juin', match: 'France – Pologne', teamA: 16, teamB: 13 },
+    { date: '25 juin', match: 'Angleterre – Slovénie', teamA: 12, teamB: 9 },
+    { date: '25 juin', match: 'Danemark – Serbie', teamA: 10, teamB: 11 },
+    { date: '26 juin', match: 'Slovaquie – Roumanie', teamA: 18, teamB: 19 },
+    { date: '26 juin', match: 'Ukraine – Belgique', teamA: 20, teamB: 17 },
+    { date: '26 juin', match: 'Rép.Tchèque – Turquie', teamA: 24, teamB: 21 },
+    { date: '26 juin', match: 'Géorgie – Portugal', teamA: 22, teamB: 23 }
+];
+
+const roundOf16Matches = [
+    { match: 37, team1: 'firstA', team2: 'secondC' },
+    { match: 38, team1: 'secondA', team2: 'secondB' },
+    { match: 39, team1: 'firstB', team2: 'third1' },
+    { match: 40, team1: 'firstC', team2: 'third4' },
+    { match: 41, team1: 'firstF', team2: 'third3' },
+    { match: 42, team1: 'secondD', team2: 'secondE' },
+    { match: 43, team1: 'firstE', team2: 'third2' },
+    { match: 44, team1: 'firstD', team2: 'secondF' }
+];
+
+const quarterFinalsMatches = [
+    { match: 45, team1: 'winner39', team2: 'winner37' },
+    { match: 46, team1: 'winner41', team2: 'winner42' },
+    { match: 47, team1: 'winner43', team2: 'winner44' },
+    { match: 48, team1: 'winner40', team2: 'winner38' }
+];
+
+const semiFinalsMatches = [
+    { match: 49, team1: 'winner45', team2: 'winner46' },
+    { match: 50, team1: 'winner47', team2: 'winner48' }
+];
+
+const finalMatch = [
+    { match: 51, team1: 'winner49', team2: 'winner50' }
+];
+
 const calculateTeamStats = (groupPredictions) => {
     const stats = {};
 
@@ -102,7 +176,7 @@ const calculateTeamStats = (groupPredictions) => {
                 draws: 0,
                 losses: 0,
                 points: 0,
-                coefficient: 0 // Ajouter un champ pour le coefficient global
+                coefficient: 0
             };
         });
 
@@ -125,53 +199,93 @@ const calculateTeamStats = (groupPredictions) => {
             }
         });
 
-        // Calculer le coefficient global pour chaque équipe
         groupTeams[group].forEach(teamId => {
             const teamResults = groupsData[group][teamId].results;
             const teamFifaIndex = groupsData[group][teamId].fifaIndex;
-            stats[group][teamId].coefficient = calculateWeightedCoefficient({ results: teamResults, fifaIndex: teamFifaIndex });
+            stats[group][teamId].coefficient = calculateCoefficient(teamResults, teamFifaIndex);
         });
     });
 
     return stats;
 };
 
-const getGroupPredictions = (group) => {
-    const predictions = [];
-    const teams = Object.keys(groupsData[group]);
-
-    for (let i = 0; i < teams.length; i++) {
-        for (let j = i + 1; j < teams.length; j++) {
-            const teamA = teams[i];
-            const teamB = teams[j];
-            const teamAStats = { results: groupsData[group][teamA].results, fifaIndex: groupsData[group][teamA].fifaIndex };
-            const teamBStats = { results: groupsData[group][teamB].results, fifaIndex: groupsData[group][teamB].fifaIndex };
-            const result = simulateMatch(teamAStats, teamBStats);
-            predictions.push({ teamA, teamB, result });
-        }
-    }
-
-    return predictions;
-};
-
 const getAllGroupPredictions = () => {
     const allPredictions = {};
-    for (const group in groupsData) {
-        allPredictions[group] = getGroupPredictions(group);
-    }
+    groupMatches.forEach(({ date, match, teamA, teamB }) => {
+        const group = Object.keys(groupTeams).find(g =>
+            groupTeams[g].includes(teamA) && groupTeams[g].includes(teamB)
+        );
+
+        if (!allPredictions[group]) {
+            allPredictions[group] = [];
+        }
+
+        const teamACoefficient = calculateCoefficient(groupsData[group][teamA].results, groupsData[group][teamA].fifaIndex);
+        const teamBCoefficient = calculateCoefficient(groupsData[group][teamB].results, groupsData[group][teamB].fifaIndex);
+        const result = predictMatchResult(teamACoefficient, teamBCoefficient);
+
+        allPredictions[group].push({ teamA, teamB, result, date, match });
+    });
     return allPredictions;
 };
 
-const simulateFinalStageMatch = (teamA, teamB, groupResults) => {
-    const teamAStats = { results: groupResults[teamA]?.results || [], fifaIndex: groupResults[teamA]?.fifaIndex || 0 };
-    const teamBStats = { results: groupResults[teamB]?.results || [], fifaIndex: groupResults[teamB]?.fifaIndex || 0 };
-    const { teamAWins, teamBWins } = simulateMatch(teamAStats, teamBStats, 5000); // Augmenter à 5000 simulations
+const calculateQualifiedTeams = (teamStats) => {
+    const qualifiedTeams = {
+        first: {},
+        second: {},
+        third: []
+    };
 
-    // Si les résultats sont égaux, déclarez un gagnant aléatoire
+    Object.keys(teamStats).forEach(group => {
+        const teams = Object.keys(teamStats[group])
+            .map(teamId => ({
+                teamId,
+                ...teamStats[group][teamId]
+            }))
+            .sort((a, b) => {
+                const pointsDiff = b.points - a.points;
+                if (pointsDiff !== 0) return pointsDiff;
+                return b.coefficient - a.coefficient;
+            });
+
+        qualifiedTeams.first[group] = teams[0].teamId;
+        qualifiedTeams.second[group] = teams[1].teamId;
+        qualifiedTeams.third.push(teams[2]);
+    });
+
+    qualifiedTeams.third.sort((a, b) => {
+        const pointsDiff = b.points - a.points;
+        if (pointsDiff !== 0) return pointsDiff;
+        return b.coefficient - a.coefficient;
+    });
+
+    qualifiedTeams.third = qualifiedTeams.third.slice(0, 4).map(team => team.teamId);
+
+    return qualifiedTeams;
+};
+
+const calculateFinalStageCoefficient = (teamStats, teamId) => {
+    const group = Object.keys(groupsData).find(group => groupsData[group][teamId]);
+    if (!group) {
+        console.error(`Team ID ${teamId} not found in groupsData`);
+        return 0;
+    }
+    const previousResults = groupsData[group][teamId].results;
+    const teamResults = teamStats[group]?.[teamId]?.results || [];
+    const results = teamResults.concat(previousResults);
+    const fifaIndex = groupsData[group][teamId].fifaIndex;
+    return calculateCoefficient(results, fifaIndex);
+};
+
+const simulateFinalStageMatch = (teamA, teamB, groupResults) => {
+    const teamACoefficient = calculateFinalStageCoefficient(groupResults, teamA);
+    const teamBCoefficient = calculateFinalStageCoefficient(groupResults, teamB);
+    const { teamAWins, teamBWins } = simulateMatch(teamACoefficient, teamBCoefficient, 5000);
+
     if (teamAWins === teamBWins) {
         return Math.random() < 0.5 ? 'A' : 'B';
     }
     return teamAWins > teamBWins ? 'A' : 'B';
 };
 
-export { calculateTeamStats, groupTeams, getAllGroupPredictions, simulateFinalStageMatch };
+export { calculateTeamStats, getAllGroupPredictions, simulateFinalStageMatch, groupTeams, roundOf16Matches, quarterFinalsMatches, semiFinalsMatches, finalMatch, calculateQualifiedTeams };
