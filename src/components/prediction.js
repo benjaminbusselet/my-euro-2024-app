@@ -4,11 +4,11 @@ const calculatePoints = (results) => {
 
 const calculateCoefficient = (results, fifaIndex) => {
     const recentFormPoints = calculatePoints(results);
-    const adjustedFifaIndex = (200 - fifaIndex) / 200; // Normalisation de l'indice FIFA
+    const adjustedFifaIndex = (200 - fifaIndex) / 200;
     return recentFormPoints * adjustedFifaIndex;
 };
 
-function randomNormalPerturbation(mean = 0, stdDev = 0.02) {
+function randomNormalPerturbation(mean = 0, stdDev = 0.01) {
     let u1 = 0, u2 = 0;
     while (u1 === 0) u1 = Math.random();
     while (u2 === 0) u2 = Math.random();
@@ -16,15 +16,15 @@ function randomNormalPerturbation(mean = 0, stdDev = 0.02) {
     return z0 * stdDev + mean;
 }
 
-function simulateMatch(teamACoefficient, teamBCoefficient, simulations = 5000) { // Augmenter à 5000 simulations
+function simulateMatch(teamACoefficient, teamBCoefficient, simulations = 10000) {
     let teamAWins = 0;
     let teamBWins = 0;
     let draws = 0;
     const tolerance = 1.0; // Tolérance pour les matchs nuls
 
     for (let i = 0; i < simulations; i++) {
-        const perturbedTeamACoefficient = teamACoefficient + randomNormalPerturbation(0, 0.02); // Utiliser la nouvelle perturbation
-        const perturbedTeamBCoefficient = teamBCoefficient + randomNormalPerturbation(0, 0.02);
+        const perturbedTeamACoefficient = teamACoefficient + randomNormalPerturbation(); // Utiliser la nouvelle perturbation
+        const perturbedTeamBCoefficient = teamBCoefficient + randomNormalPerturbation();
 
         if (Math.abs(perturbedTeamACoefficient - perturbedTeamBCoefficient) < tolerance) {
             draws++;
